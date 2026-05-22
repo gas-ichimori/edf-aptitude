@@ -57,14 +57,6 @@
     }
 
     .url-box { background: #0a0a0a; border: 1px solid #2a0000; padding: 12px 20px; font-size: 14px; color: #CC0000; word-break: break-all; margin-bottom: 16px; max-width: 380px; width: 100%; }
-    .note-box { background: #050505; border-left: 3px solid #FFD700; padding: 12px 16px; text-align: left; font-size: 11px; color: #777; line-height: 1.8; max-width: 380px; width: 100%; margin-bottom: 20px; }
-    .note-box strong { color: #FFD700; }
-    code { color: #aaa; }
-
-    .status-row { display: flex; gap: 20px; align-items: center; font-size: 11px; color: #444; margin-bottom: 8px; }
-    .status-dot { display: inline-block; width: 8px; height: 8px; background: #00FF41; border-radius: 50%; box-shadow: 0 0 8px #00FF41; animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-    .status-ok { color: #00FF41; }
     .footer-text { font-size: 10px; color: #333; letter-spacing: 2px; margin-top: 16px; }
   </style>
 </head>
@@ -77,8 +69,8 @@
     <div class="divider"></div>
     <div class="head-text">隊員適性診断 — スマホアクセス</div>
     <p class="desc-text">
-      同じWi-Fiに接続したスマホのカメラで<br>
-      下記のQRコードを読み取ってください
+      スマホのカメラアプリでQRコードを読み取り<br>
+      診断をスタートしてください
     </p>
     <div class="qr-frame">
       <div class="qr-corner-tr"></div>
@@ -87,18 +79,6 @@
       <div class="qr-label">SCAN TO DEPLOY</div>
     </div>
     <div class="url-box">https://gas-ichimori.github.io/edf-diagnosis/</div>
-    <div class="note-box">
-      <strong>接続方法:</strong><br>
-      ① このPCと同じWi-Fiにスマホを接続<br>
-      ② スマホのカメラアプリでQRコードを読み取る<br>
-      ③ 表示されたURLをタップして診断開始<br><br>
-      <strong>サーバー停止:</strong> ターミナルで <code>Ctrl+C</code>
-    </div>
-    <div class="status-row">
-      <span class="status-dot"></span>
-      <span class="status-ok">SERVER ONLINE</span>
-      <span>PORT: 8765</span>
-    </div>
     <div class="footer-text">D3PUBLISHER / ©SANDLOT ©D3PUBLISHER</div>
   </div>
 </body>
