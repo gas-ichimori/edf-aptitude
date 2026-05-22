@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EDF診断 — アクセスQRコード</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #000; color: #ccc;
+      font-family: 'Share Tech Mono', 'Courier New', monospace;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 100vh; padding: 40px 24px; text-align: center;
+    }
+    .scanlines {
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px);
+      pointer-events: none; z-index: 9;
+    }
+    .ticker {
+      position: fixed; top: 0; left: 0; width: 100%;
+      background: #CC0000; color: #fff; text-align: center;
+      font-family: 'Orbitron', monospace; font-size: 11px;
+      padding: 7px; letter-spacing: 3px; z-index: 10;
+      animation: tickBlink 1.2s infinite;
+    }
+    @keyframes tickBlink { 0%,100%{background:#CC0000} 50%{background:#880000} }
+
+    .inner { padding-top: 44px; width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; }
+    .edf-title {
+      font-family: 'Orbitron', monospace; font-size: 56px; font-weight: 900;
+      color: #FFD700; text-shadow: 0 0 20px #FFD700, 0 0 50px rgba(255,215,0,.4);
+      letter-spacing: 12px; line-height: 1; margin-bottom: 6px;
+    }
+    .sub-title { font-size: 10px; letter-spacing: 4px; color: #555; margin-bottom: 4px; }
+    .divider { width: 300px; height: 1px; background: linear-gradient(90deg, transparent, #CC0000, transparent); margin: 14px auto; }
+    .head-text { font-family: 'Orbitron', monospace; font-size: 13px; letter-spacing: 3px; color: #fff; margin-bottom: 4px; }
+    .desc-text { font-size: 11px; color: #666; letter-spacing: 1px; margin-bottom: 24px; line-height: 1.7; }
+
+    .qr-frame {
+      position: relative; padding: 18px;
+      background: #080808; border: 2px solid #CC0000;
+      box-shadow: 0 0 40px rgba(204,0,0,.35), inset 0 0 20px rgba(0,0,0,.8);
+      display: inline-block; margin-bottom: 20px;
+    }
+    .qr-frame::before { content: ''; position: absolute; top: 4px; left: 4px; width: 20px; height: 20px; border-top: 2px solid #FFD700; border-left: 2px solid #FFD700; }
+    .qr-frame::after  { content: ''; position: absolute; bottom: 4px; right: 4px; width: 20px; height: 20px; border-bottom: 2px solid #FFD700; border-right: 2px solid #FFD700; }
+    .qr-corner-tr { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-top: 2px solid #FFD700; border-right: 2px solid #FFD700; }
+    .qr-corner-bl { position: absolute; bottom: 4px; left: 4px; width: 20px; height: 20px; border-bottom: 2px solid #FFD700; border-left: 2px solid #FFD700; }
+    .qr-frame img { display: block; width: 280px; height: 280px; image-rendering: pixelated; }
+    .qr-label {
+      position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%);
+      background: #CC0000; color: #fff; font-size: 9px;
+      letter-spacing: 3px; padding: 3px 10px;
+      font-family: 'Orbitron', monospace; white-space: nowrap;
+    }
+
+    .url-box { background: #0a0a0a; border: 1px solid #2a0000; padding: 12px 20px; font-size: 14px; color: #CC0000; word-break: break-all; margin-bottom: 16px; max-width: 380px; width: 100%; }
+    .note-box { background: #050505; border-left: 3px solid #FFD700; padding: 12px 16px; text-align: left; font-size: 11px; color: #777; line-height: 1.8; max-width: 380px; width: 100%; margin-bottom: 20px; }
+    .note-box strong { color: #FFD700; }
+    code { color: #aaa; }
+
+    .status-row { display: flex; gap: 20px; align-items: center; font-size: 11px; color: #444; margin-bottom: 8px; }
+    .status-dot { display: inline-block; width: 8px; height: 8px; background: #00FF41; border-radius: 50%; box-shadow: 0 0 8px #00FF41; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .status-ok { color: #00FF41; }
+    .footer-text { font-size: 10px; color: #333; letter-spacing: 2px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="scanlines"></div>
+  <div class="ticker">⚠ EDF SOLDIER APTITUDE EVALUATION SYSTEM — TGS2026 D3PUBLISHER ⚠</div>
+  <div class="inner">
+    <div class="edf-title">EDF</div>
+    <div class="sub-title">EARTH DEFENSE FORCE / TGS2026</div>
+    <div class="divider"></div>
+    <div class="head-text">隊員適性診断 — スマホアクセス</div>
+    <p class="desc-text">
+      同じWi-Fiに接続したスマホのカメラで<br>
+      下記のQRコードを読み取ってください
+    </p>
+    <div class="qr-frame">
+      <div class="qr-corner-tr"></div>
+      <div class="qr-corner-bl"></div>
+      <img src="qr.png" alt="QR Code">
+      <div class="qr-label">SCAN TO DEPLOY</div>
+    </div>
+    <div class="url-box">https://gas-ichimori.github.io/edf-diagnosis/</div>
+    <div class="note-box">
+      <strong>接続方法:</strong><br>
+      ① このPCと同じWi-Fiにスマホを接続<br>
+      ② スマホのカメラアプリでQRコードを読み取る<br>
+      ③ 表示されたURLをタップして診断開始<br><br>
+      <strong>サーバー停止:</strong> ターミナルで <code>Ctrl+C</code>
+    </div>
+    <div class="status-row">
+      <span class="status-dot"></span>
+      <span class="status-ok">SERVER ONLINE</span>
+      <span>PORT: 8765</span>
+    </div>
+    <div class="footer-text">D3PUBLISHER / ©SANDLOT ©D3PUBLISHER</div>
+  </div>
+</body>
+</html>
