@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>EDF隊員適性診断 | TGS2026</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="scanlines"></div>
+  <div class="noise"></div>
+
+  <!-- ===================== START ===================== -->
+  <div id="screen-start" class="screen active">
+    <div class="top-ticker">⚠ EMERGENCY BROADCAST — 緊急警戒レベル OMEGA — INVASION CONFIRMED ⚠</div>
+    <div class="start-wrap">
+      <div class="edf-logo-block">
+        <div class="edf-big">EDF</div>
+        <div class="edf-sub">EARTH DEFENSE FORCE</div>
+        <div class="edf-line"></div>
+        <div class="edf-sub2">SOLDIER APTITUDE EVALUATION SYSTEM v6.1</div>
+      </div>
+      <div class="classified-badge">CLASSIFIED</div>
+      <h1 class="start-title">隊員<br>適性診断</h1>
+      <p class="start-desc">地球防衛軍はあなたの配属先を<br>今すぐ決定する必要があります。</p>
+      <div class="terminal-id-box">
+        TERMINAL: TGS-2026-<span id="terminalId"></span>
+      </div>
+      <button class="btn-start" id="btnStart">
+        <span class="btn-start-main">診断開始</span>
+        <span class="btn-start-sub">▶ START EVALUATION</span>
+      </button>
+      <div class="start-footer">D3PUBLISHER / TGS2026 / EARTH DEFENSE FORCE</div>
+    </div>
+  </div>
+
+  <!-- ===================== QUESTION ===================== -->
+  <div id="screen-question" class="screen">
+    <div class="q-header">
+      <div class="q-header-left">EDF EVAL SYS</div>
+      <div class="q-header-center">
+        <div class="q-progress-bar"><div class="q-progress-fill" id="progressFill"></div></div>
+        <div class="q-progress-label" id="progressLabel">1 / 5</div>
+      </div>
+      <div class="q-header-right" id="qNum">Q.01</div>
+    </div>
+    <div class="q-body">
+      <div class="q-category">SCENARIO ASSESSMENT</div>
+      <div class="q-text" id="questionText"></div>
+      <div class="q-choices" id="choicesWrap"></div>
+    </div>
+    <div class="corner tl">◤</div>
+    <div class="corner tr">◥</div>
+    <div class="corner bl">◣</div>
+    <div class="corner br">◢</div>
+  </div>
+
+  <!-- ===================== ANALYZING ===================== -->
+  <div id="screen-analyzing" class="screen">
+    <div class="analyze-wrap">
+      <div class="radar-ring">
+        <div class="radar-sweep"></div>
+        <div class="radar-center">EDF</div>
+        <div class="radar-inner"></div>
+      </div>
+      <div class="analyze-label">ANALYZING...</div>
+      <div class="analyze-log" id="analyzeLog"></div>
+    </div>
+  </div>
+
+  <!-- ===================== RESULT ===================== -->
+  <div id="screen-result" class="screen">
+    <div class="result-outer">
+
+      <!-- THE CARD -->
+      <div class="card" id="resultCard">
+
+        <!-- Warning flash overlay -->
+        <div class="card-warning-flash" id="cardFlash">
+          <div class="card-warning-text">WARNING</div>
+        </div>
+
+        <!-- Card Header -->
+        <div class="card-head">
+          <div class="card-head-edf">EDF</div>
+          <div class="card-head-titles">
+            <div class="card-head-jp">緊急配属証明書</div>
+            <div class="card-head-en">EMERGENCY DEPLOYMENT CERTIFICATE</div>
+          </div>
+          <div class="card-head-secret">TOP SECRET</div>
+        </div>
+
+        <!-- ID Row -->
+        <div class="card-id-row">
+          <span class="card-id-label">SOLDIER ID:</span>
+          <span class="card-id-val" id="resPlayerId"></span>
+          <span class="card-id-date" id="resDate"></span>
+        </div>
+
+        <!-- Troop Block -->
+        <div class="card-troop-block">
+          <div class="card-troop-icon" id="resTroopIcon"></div>
+          <div class="card-troop-info">
+            <div class="card-troop-sublabel">兵科適性 / UNIT TYPE</div>
+            <div class="card-troop-name" id="resTroopName"></div>
+            <div class="card-troop-en" id="resTroopEn"></div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="card-stats">
+          <div class="card-stat-block">
+            <div class="card-stat-lbl">生存率 / SURVIVAL RATE</div>
+            <div class="card-stat-survival">
+              <span class="card-survival-num" id="resSurvival"></span><span class="card-survival-pct">%</span>
+            </div>
+            <div class="card-stat-bar-wrap">
+              <div class="card-stat-bar" id="resSurvivalBar"></div>
+            </div>
+          </div>
+          <div class="card-stat-sep"></div>
+          <div class="card-stat-block">
+            <div class="card-stat-lbl">部隊ランク / RANK</div>
+            <div class="card-stat-rank" id="resRank"></div>
+            <div class="card-stat-stars" id="resStars"></div>
+          </div>
+        </div>
+
+        <!-- Comment -->
+        <div class="card-comment">
+          <div class="card-comment-lbl">▶ 司令部所見 / COMMAND NOTE</div>
+          <div class="card-comment-body" id="resComment"></div>
+        </div>
+
+        <!-- Decorative data lines -->
+        <div class="card-data-lines">
+          <div class="data-line"><span class="dl-k">STATUS</span><span class="dl-v">DEPLOYMENT AUTHORIZED</span></div>
+          <div class="data-line"><span class="dl-k">CLEARANCE</span><span class="dl-v" id="resClearance"></span></div>
+          <div class="data-line"><span class="dl-k">PRIORITY</span><span class="dl-v blink-red">URGENT</span></div>
+        </div>
+
+        <!-- Stamp -->
+        <div class="card-stamp" id="cardStamp">
+          <div class="stamp-inner">
+            <div class="stamp-jp">配属完了</div>
+            <div class="stamp-en">DEPLOYED</div>
+          </div>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="card-foot">
+          <span>TGS2026 D3PUBLISHER</span>
+          <span>©SANDLOT ©D3PUBLISHER</span>
+          <span>EDF COMMAND HQ</span>
+        </div>
+
+      </div>
+      <!-- /card -->
+
+      <!-- Buttons -->
+      <div class="result-btns">
+        <button class="btn-share" id="btnShare">𝕏 &nbsp;Xに投稿する</button>
+        <button class="btn-retry" id="btnRetry">▶ 再診断する</button>
+      </div>
+
+      <div class="result-tgs-notice">▶ TGS2026 D3PUBLISHERブースに急げ！地球が待っている。</div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
