@@ -29,7 +29,7 @@ body::before {
   position: fixed; inset: 0; z-index: 1; pointer-events: none;
 }
 
-/* キャラタップ領域 */
+/* キャラタップ領域（アイドル時のみ反応） */
 #char-tap {
   position: fixed; bottom: 0; left: 50%;
   transform: translateX(-50%);
@@ -59,14 +59,29 @@ body::before {
   display: none; z-index: 30;
   backdrop-filter: blur(6px);
   box-shadow: 0 4px 24px rgba(0,0,0,0.8), inset 0 1px 0 rgba(200,168,50,0.15);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
-/* しっぽを上向きに変更 */
+/* しっぽを上向きに */
 #speech-bubble::after {
   content: ''; position: absolute;
   top: -14px; left: 50%; transform: translateX(-50%);
   border: 7px solid transparent; border-bottom-color: var(--gold);
 }
 #speech-bubble.show { display: block; }
+
+/* 「タップで次へ」ヒント */
+#speech-tap-next {
+  display: none;
+  text-align: right;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #88ff55;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  background: transparent;
+  border: none;
+}
 
 #tap-hint {
   position: fixed; bottom: 28px; left: 50%;
@@ -165,7 +180,10 @@ body::before {
 <canvas id="pixi-canvas"></canvas>
 <div id="char-tap" onclick="onCharacterTap()"></div>
 
-<div id="speech-bubble"></div>
+<div id="speech-bubble" onclick="onSpeechBubbleTap(event)">
+  <div id="speech-text"></div>
+  <div id="speech-tap-next">タップで次へ ▶</div>
+</div>
 <div id="tap-hint">▼ タップして開始 ▼</div>
 
 <div id="question-panel" hidden>
@@ -202,8 +220,8 @@ const pixiApp = new PIXI.Application({
 });
 
 let sprite = null, baseScale = 1, baseY = 0;
-let animT = 0, reactT = 0, glowT = 0;
-let talking = false, reacting = false, glowing = false;
+let animT = 0, glowT = 0;
+let talking = false, glowing = false;
 
 PIXI.Assets.load('/character.png').then(tex => {
   sprite = new PIXI.Sprite(tex);
@@ -227,7 +245,6 @@ function tick(delta) {
   if (!sprite) return;
   animT += delta * 0.016;
 
-  // 有機的なアイドルアニメーション（3つの周波数を重ねる）
   const breathe = Math.sin(animT * 1.25) * 0.011;
   const sway    = Math.sin(animT * 0.73) * 0.013;
   const float_  = Math.sin(animT * 1.05) * 3.2;
@@ -238,23 +255,11 @@ function tick(delta) {
   let rot = sway;
   let py = baseY + float_;
 
-  // 口パク（上体が微細に波打つ）
   if (talking) {
     const t = Math.sin(animT * 15) * 0.009;
     sx += t; sy -= t * 1.5;
   }
 
-  // タップリアクション（バウンス減衰）
-  if (reacting) {
-    reactT += delta * 0.016;
-    const b = Math.sin(reactT * 22) * Math.exp(-reactT * 4.5) * 20;
-    py = baseY + float_ + b;
-    const sq = Math.abs(b) * 0.0012;
-    sx += sq; sy -= sq * 2;
-    if (reactT > 1.3) { reacting = false; reactT = 0; }
-  }
-
-  // 結果グロー（色温度を揺らす）
   if (glowing) {
     glowT += delta * 0.016;
     const g = Math.sin(glowT * 2.8) * 0.5 + 0.5;
@@ -271,7 +276,6 @@ function tick(delta) {
 const charAnim = {
   startTalk() { talking = true; },
   stopTalk()  { talking = false; },
-  react()     { reacting = true; reactT = 0; },
   glow(on)    { glowing = on; glowT = 0; if (!on && sprite) sprite.tint = 0xffffff; },
 };
 
@@ -359,25 +363,33 @@ function speak(text, cb) {
   s.speak(u);
 }
 
-function showBubble(t) { $('speech-bubble').textContent = t; $('speech-bubble').classList.add('show'); }
-function hideBubble()  { $('speech-bubble').classList.remove('show'); }
+function showBubble(t, tapHint = false) {
+  $('speech-text').textContent = t;
+  $('speech-tap-next').style.display = tapHint ? 'block' : 'none';
+  $('speech-bubble').classList.add('show');
+}
+function hideBubble() { $('speech-bubble').classList.remove('show'); }
 
+// アイドル時のみ身体タップで開始
 function onCharacterTap() {
-  if (state === 'idle') {
-    state = 'intro'; introIdx = 0;
-    $('tap-hint').style.display = 'none';
-    showIntroLine();
-  } else if (state === 'intro') {
-    window.speechSynthesis?.cancel();
-    charAnim.stopTalk();
-    introIdx++;
-    introIdx >= INTRO.length ? startQuestions() : showIntroLine();
-  }
-  charAnim.react();
+  if (state !== 'idle') return;
+  state = 'intro'; introIdx = 0;
+  $('tap-hint').style.display = 'none';
+  showIntroLine();
+}
+
+// イントロ中は吹き出しタップで次へ
+function onSpeechBubbleTap(e) {
+  e.stopPropagation();
+  if (state !== 'intro') return;
+  window.speechSynthesis?.cancel();
+  charAnim.stopTalk();
+  introIdx++;
+  introIdx >= INTRO.length ? startQuestions() : showIntroLine();
 }
 
 function showIntroLine() {
-  showBubble(INTRO[introIdx] + '\n\n（タップで次へ）');
+  showBubble(INTRO[introIdx], true);
   speak(INTRO[introIdx], () => {});
 }
 
@@ -410,8 +422,7 @@ function selectAnswer(i) {
   Object.entries(QUESTIONS[qIdx].a[i].s).forEach(([k,v]) => scores[k] += v);
   const react = REACTIONS[qIdx][i];
   $('question-panel').setAttribute('hidden', '');
-  showBubble(react);
-  charAnim.react();
+  showBubble(react, false);
   speak(react, () => {
     hideBubble();
     qIdx++;
