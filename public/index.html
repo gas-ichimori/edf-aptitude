@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>EDF適正診断</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@800&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root { --gold: #c8a832; --text: #e8f0e0; }
@@ -11,7 +13,8 @@
 body {
   background: url('/bg.jpg') center center / cover no-repeat fixed;
   color: var(--text);
-  font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  font-family: 'M PLUS 1p', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  font-weight: 800;
   height: 100dvh; overflow: hidden; user-select: none;
 }
 body::before {
@@ -42,23 +45,26 @@ body::before {
   z-index: 20; text-shadow: 0 0 10px rgba(200,168,50,0.4);
 }
 
-/* 吹き出し */
+/* 吹き出し（お腹あたり・しっぽ上向き） */
 #speech-bubble {
-  position: fixed; top: 48px; left: 50%;
+  position: fixed;
+  top: 58%;
+  left: 50%;
   transform: translateX(-50%);
   background: rgba(3,12,3,0.93);
   border: 2px solid var(--gold); border-radius: 14px;
   padding: 14px 20px; max-width: 320px; width: 90%;
-  font-size: 14px; line-height: 1.75; text-align: center;
+  font-size: 15px; line-height: 1.75; text-align: center;
   color: #dff0d0; white-space: pre-line;
   display: none; z-index: 30;
   backdrop-filter: blur(6px);
   box-shadow: 0 4px 24px rgba(0,0,0,0.8), inset 0 1px 0 rgba(200,168,50,0.15);
 }
+/* しっぽを上向きに変更 */
 #speech-bubble::after {
   content: ''; position: absolute;
-  bottom: -14px; left: 50%; transform: translateX(-50%);
-  border: 7px solid transparent; border-top-color: var(--gold);
+  top: -14px; left: 50%; transform: translateX(-50%);
+  border: 7px solid transparent; border-bottom-color: var(--gold);
 }
 #speech-bubble.show { display: block; }
 
