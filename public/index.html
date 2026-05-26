@@ -6,450 +6,175 @@
 <title>EDF適正診断</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --green: #3d6b2a;
-  --dark: #0a1208;
-  --gold: #c8a832;
-  --text: #e8f0e0;
-}
+:root { --gold: #c8a832; --text: #e8f0e0; }
 
 body {
   background: url('/bg.jpg') center center / cover no-repeat fixed;
   color: var(--text);
   font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif;
-  height: 100dvh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  user-select: none;
+  height: 100dvh; overflow: hidden; user-select: none;
 }
-
-/* ---- 背景スキャンライン ---- */
 body::before {
   content: '';
   position: fixed; inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 3px,
-    rgba(0,0,0,0.15) 3px,
-    rgba(0,0,0,0.15) 4px
-  );
-  pointer-events: none;
-  z-index: 0;
+  background: rgba(0,0,0,0.42),
+    repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px);
+  pointer-events: none; z-index: 0;
 }
 
-#app {
-  position: relative;
-  width: 100%;
-  max-width: 480px;
-  height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 1;
+#pixi-canvas {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
 }
 
-/* ---- ヘッダー ---- */
-#header {
-  width: 100%;
-  text-align: center;
-  padding: 10px 0 4px;
-  font-size: 11px;
-  letter-spacing: 4px;
-  color: var(--gold);
-  opacity: 0.8;
-}
-
-/* ---- キャラクターエリア ---- */
-#character-area {
-  position: relative;
-  flex: 1;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  width: 100%;
-  cursor: pointer;
+/* キャラタップ領域 */
+#char-tap {
+  position: fixed; bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 60%; height: 80%;
+  z-index: 5; cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 
-#character-svg {
-  height: 70dvh;
-  max-height: 500px;
-  width: auto;
-  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.8));
-  transform-origin: bottom center;
-  animation: idle-breathe 3.5s ease-in-out infinite;
+#header {
+  position: fixed; top: 0; left: 0; right: 0;
+  text-align: center; padding: 12px 0;
+  font-size: 11px; letter-spacing: 4px; color: var(--gold);
+  z-index: 20; text-shadow: 0 0 10px rgba(200,168,50,0.4);
 }
 
-@keyframes idle-breathe {
-  0%, 100% { transform: scaleY(1) translateY(0); }
-  50%       { transform: scaleY(1.012) translateY(-4px); }
-}
-
-#character-svg.touched {
-  animation: bounce 0.4s ease;
-}
-
-@keyframes bounce {
-  0%   { transform: translateY(0); }
-  30%  { transform: translateY(-18px) rotate(-2deg); }
-  60%  { transform: translateY(-6px) rotate(1deg); }
-  100% { transform: translateY(0) rotate(0); }
-}
-
-/* ---- まばたきアニメ ---- */
-.eyelid { animation: blink 4s ease-in-out infinite; transform-origin: top center; transform-box: fill-box; }
-.eyelid-r { animation: blink 4s ease-in-out infinite 0.05s; transform-origin: top center; transform-box: fill-box; }
-@keyframes blink {
-  0%, 40%, 50%, 100% { transform: scaleY(0); }
-  45%                { transform: scaleY(1); }
-}
-
-/* 口パク */
-.mouth-open { display: none; }
-.talking .mouth-closed { display: none; }
-.talking .mouth-open   { display: block; }
-
-/* ---- 吹き出し ---- */
+/* 吹き出し */
 #speech-bubble {
-  position: absolute;
-  top: 10px;
-  left: 50%;
+  position: fixed; top: 48px; left: 50%;
   transform: translateX(-50%);
-  background: rgba(10, 30, 10, 0.92);
-  border: 2px solid var(--gold);
-  border-radius: 14px;
-  padding: 12px 18px;
-  max-width: 300px;
-  font-size: 14px;
-  line-height: 1.6;
-  text-align: center;
-  color: #dff0d0;
-  display: none;
-  z-index: 20;
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.7));
+  background: rgba(3,12,3,0.93);
+  border: 2px solid var(--gold); border-radius: 14px;
+  padding: 14px 20px; max-width: 320px; width: 90%;
+  font-size: 14px; line-height: 1.75; text-align: center;
+  color: #dff0d0; white-space: pre-line;
+  display: none; z-index: 30;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.8), inset 0 1px 0 rgba(200,168,50,0.15);
 }
 #speech-bubble::after {
-  content: '';
-  position: absolute;
-  bottom: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 7px solid transparent;
-  border-top-color: var(--gold);
+  content: ''; position: absolute;
+  bottom: -14px; left: 50%; transform: translateX(-50%);
+  border: 7px solid transparent; border-top-color: var(--gold);
 }
 #speech-bubble.show { display: block; }
 
-/* ---- タップ促進 ---- */
 #tap-hint {
-  position: absolute;
-  bottom: 30px;
-  left: 50%;
+  position: fixed; bottom: 28px; left: 50%;
   transform: translateX(-50%);
-  font-size: 16px;
-  letter-spacing: 3px;
-  color: var(--gold);
-  animation: pulse-hint 1.6s ease-in-out infinite;
-  pointer-events: none;
+  font-size: 15px; letter-spacing: 3px; color: var(--gold);
+  z-index: 20; pointer-events: none;
+  animation: hint-pulse 1.6s ease-in-out infinite;
+  text-shadow: 0 0 12px rgba(200,168,50,0.5);
 }
-@keyframes pulse-hint { 0%,100%{opacity:0.4} 50%{opacity:1} }
+@keyframes hint-pulse { 0%,100%{opacity:0.25} 50%{opacity:1} }
 
-/* ---- 質問パネル ---- */
+/* 質問パネル */
 #question-panel {
-  position: absolute;
-  inset: 0;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px 20px;
-  z-index: 30;
-  background: rgba(5, 14, 5, 0.75);
-  backdrop-filter: blur(6px);
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px 20px; z-index: 30;
+  background: rgba(2,8,2,0.78); backdrop-filter: blur(10px);
 }
-#question-panel.show { display: flex; }
+#question-panel[hidden] { display: none; }
 
-#q-progress {
-  font-size: 11px;
-  letter-spacing: 3px;
-  color: var(--gold);
-  margin-bottom: 12px;
+#q-progress { font-size: 11px; letter-spacing: 3px; color: var(--gold); margin-bottom: 8px; }
+#q-bar {
+  width: 220px; height: 3px;
+  background: rgba(200,168,50,0.18); border-radius: 2px; margin-bottom: 22px;
 }
-
+#q-bar-fill { height: 100%; background: var(--gold); border-radius: 2px; transition: width 0.4s ease; }
 #q-text {
-  font-size: 18px;
-  font-weight: bold;
-  text-align: center;
-  line-height: 1.5;
-  margin-bottom: 24px;
-  color: #fff;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  font-size: 19px; font-weight: bold;
+  text-align: center; line-height: 1.55;
+  margin-bottom: 26px; color: #fff; max-width: 340px;
+  text-shadow: 0 2px 12px rgba(0,0,0,1);
 }
-
-#answers {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  max-width: 360px;
-}
-
+#answers { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 360px; }
 .answer-btn {
-  width: 100%;
-  padding: 14px 18px;
-  background: rgba(30, 60, 20, 0.85);
-  border: 1.5px solid rgba(100, 180, 60, 0.4);
-  border-radius: 12px;
-  color: #dff0d0;
-  font-size: 15px;
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  width: 100%; padding: 15px 18px;
+  background: rgba(18,45,12,0.88);
+  border: 1.5px solid rgba(100,180,60,0.3); border-radius: 10px;
+  color: #dff0d0; font-size: 15px; font-family: inherit;
+  text-align: left; cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.12s, border-color 0.12s, transform 0.1s;
   -webkit-tap-highlight-color: transparent;
 }
 .answer-btn:active {
-  background: rgba(60, 120, 30, 0.9);
-  border-color: var(--gold);
-  transform: scale(0.97);
+  background: rgba(50,110,28,0.95); border-color: var(--gold); transform: scale(0.97);
 }
 
-/* ---- 結果パネル ---- */
-#result-panel {
-  position: fixed;
-  inset: 0;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 24px;
-  z-index: 50;
-  text-align: center;
-  transition: background 1s;
-}
-#result-panel.show { display: flex; }
-
-#result-icon { font-size: 72px; margin-bottom: 12px; animation: result-pop 0.6s cubic-bezier(0.34,1.56,0.64,1); }
-@keyframes result-pop { 0%{transform:scale(0) rotate(-20deg)} 100%{transform:scale(1) rotate(0)} }
-
-#result-class-en {
-  font-size: 12px;
-  letter-spacing: 5px;
-  opacity: 0.7;
-  margin-bottom: 4px;
-}
-#result-class-jp {
-  font-size: 46px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  margin-bottom: 16px;
-  text-shadow: 0 0 30px currentColor;
-}
-#result-badge {
-  display: inline-block;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 6px;
-  padding: 4px 16px;
-  font-size: 13px;
-  letter-spacing: 2px;
-  margin-bottom: 20px;
-  color: var(--gold);
-}
-#result-desc {
-  font-size: 14px;
-  line-height: 1.8;
-  max-width: 320px;
-  opacity: 0.8;
-  white-space: pre-line;
-  margin-bottom: 28px;
-}
-#retry-btn {
-  padding: 14px 40px;
-  background: transparent;
-  border: 2px solid var(--gold);
-  border-radius: 40px;
-  color: var(--gold);
-  font-size: 16px;
-  font-family: inherit;
-  cursor: pointer;
-  letter-spacing: 2px;
-  transition: background 0.2s;
-}
-#retry-btn:active { background: rgba(200, 168, 50, 0.2); }
-
-/* ---- 診断中 ---- */
+/* 診断中 */
 #calculating {
   position: fixed; inset: 0;
-  display: none;
-  align-items: center; justify-content: center;
-  flex-direction: column; gap: 20px;
-  background: rgba(5,14,5,0.95);
-  z-index: 40;
-  font-size: 18px;
-  letter-spacing: 3px;
-  color: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 22px;
+  background: rgba(2,8,2,0.96); z-index: 40;
+  font-size: 18px; letter-spacing: 3px; color: var(--gold);
 }
-#calculating.show { display: flex; }
-.dots { animation: dot-blink 1.2s steps(4, end) infinite; }
-@keyframes dot-blink { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
+#calculating[hidden] { display: none; }
+.dot-anim::after {
+  content: ''; animation: dots 1.5s steps(4,end) infinite;
+}
+@keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} 100%{content:''} }
+
+/* 結果 */
+#result-panel {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px 24px; z-index: 50; text-align: center;
+}
+#result-panel[hidden] { display: none; }
+
+#result-icon { font-size: 70px; margin-bottom: 10px; animation: rpop 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes rpop { 0%{transform:scale(0) rotate(-20deg)} 100%{transform:scale(1)} }
+#result-class-en { font-size: 12px; letter-spacing: 5px; opacity: 0.6; margin-bottom: 4px; }
+#result-class-jp { font-size: 44px; font-weight: 900; letter-spacing: 2px; margin-bottom: 14px; text-shadow: 0 0 30px currentColor; }
+#result-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px; padding: 4px 16px;
+  font-size: 12px; letter-spacing: 2px; margin-bottom: 18px; color: var(--gold);
+}
+#result-desc { font-size: 14px; line-height: 1.9; max-width: 320px; opacity: 0.85; white-space: pre-line; margin-bottom: 28px; }
+#retry-btn {
+  padding: 14px 40px; background: transparent;
+  border: 2px solid var(--gold); border-radius: 40px;
+  color: var(--gold); font-size: 15px; font-family: inherit;
+  cursor: pointer; letter-spacing: 2px;
+  -webkit-tap-highlight-color: transparent;
+}
+#retry-btn:active { background: rgba(200,168,50,0.15); }
 </style>
 </head>
 <body>
-<div id="app">
 
-  <div id="header">— EARTH DEFENSE FORCE —</div>
+<div id="header">— EARTH DEFENSE FORCE —</div>
+<canvas id="pixi-canvas"></canvas>
+<div id="char-tap" onclick="onCharacterTap()"></div>
 
-  <!-- キャラクターエリア -->
-  <div id="character-area" onclick="onCharacterTap()">
+<div id="speech-bubble"></div>
+<div id="tap-hint">▼ タップして開始 ▼</div>
 
-    <!-- SVGキャラクター -->
-    <svg id="character-svg" viewBox="0 0 280 520" xmlns="http://www.w3.org/2000/svg">
-      <!-- 地面の影 -->
-      <ellipse cx="140" cy="510" rx="65" ry="10" fill="rgba(0,0,0,0.4)"/>
-
-      <!-- ブーツ -->
-      <rect x="82"  y="420" width="44" height="42" fill="#1a1a1a" rx="6"/>
-      <rect x="154" y="420" width="44" height="42" fill="#1a1a1a" rx="6"/>
-      <rect x="78"  y="450" width="50" height="14" fill="#111" rx="4"/>
-      <rect x="152" y="450" width="50" height="14" fill="#111" rx="4"/>
-
-      <!-- パンツ -->
-      <rect x="84"  y="305" width="46" height="125" fill="#2c3e1a" rx="4"/>
-      <rect x="150" y="305" width="46" height="125" fill="#2c3e1a" rx="4"/>
-      <!-- ニーパッド -->
-      <rect x="85"  y="355" width="44" height="22" fill="#3a4a22" rx="4"/>
-      <rect x="151" y="355" width="44" height="22" fill="#3a4a22" rx="4"/>
-
-      <!-- ベルト -->
-      <rect x="78" y="293" width="124" height="16" fill="#6b5218" rx="3"/>
-      <rect x="126" y="295" width="28" height="12" fill="#9a7828" rx="2"/>
-      <!-- ポーチ -->
-      <rect x="82"  y="296" width="20" height="14" fill="#5a4a18" rx="2"/>
-      <rect x="178" y="296" width="20" height="14" fill="#5a4a18" rx="2"/>
-
-      <!-- ジャケット本体 -->
-      <path d="M68 180 L212 180 L220 298 L60 298 Z" fill="#3d6030"/>
-      <!-- タクティカルベスト -->
-      <path d="M88 186 L192 186 L196 270 L84 270 Z" fill="#4a6838"/>
-      <!-- ベスト中央ライン -->
-      <line x1="140" y1="186" x2="140" y2="270" stroke="#3a5228" stroke-width="2"/>
-      <!-- ポケット -->
-      <rect x="92" y="200" width="32" height="20" fill="#3a5228" rx="3"/>
-      <rect x="156" y="200" width="32" height="20" fill="#3a5228" rx="3"/>
-      <!-- 胸の勲章/ランク -->
-      <rect x="94" y="224" width="28" height="16" fill="#c8a832" rx="2"/>
-      <rect x="97" y="227" width="6" height="10" fill="#fff" rx="1"/>
-      <rect x="106" y="227" width="6" height="10" fill="#e00" rx="1"/>
-      <rect x="115" y="227" width="6" height="10" fill="#48f" rx="1"/>
-      <!-- 右胸 EDF エンブレム -->
-      <circle cx="172" cy="230" r="14" fill="none" stroke="#c8a832" stroke-width="2"/>
-      <text x="172" y="234" text-anchor="middle" font-size="9" fill="#c8a832" font-weight="bold">EDF</text>
-
-      <!-- 左腕（向かって右） -->
-      <path d="M68 182 L44 192 L36 320 L66 318 Z" fill="#3d6030"/>
-      <rect x="28" y="308" width="40" height="52" fill="#2a3820" rx="8"/>
-      <rect x="30" y="340" width="36" height="22" fill="#1a2814" rx="5"/>
-      <!-- 袖のシェブロン -->
-      <path d="M50 220 L58 228 L50 236" fill="none" stroke="#c8a832" stroke-width="2"/>
-
-      <!-- 右腕（向かって左）— 少し前に出して敬礼風 -->
-      <path d="M212 182 L236 192 L244 320 L214 318 Z" fill="#3d6030"/>
-      <rect x="212" y="308" width="40" height="52" fill="#2a3820" rx="8"/>
-      <rect x="214" y="340" width="36" height="22" fill="#1a2814" rx="5"/>
-
-      <!-- 首 -->
-      <rect x="122" y="148" width="36" height="38" fill="#e8b080" rx="4"/>
-
-      <!-- === 頭部グループ === -->
-      <g id="head-group">
-        <!-- 耳 -->
-        <ellipse cx="84"  cy="110" rx="9" ry="12" fill="#e8b080"/>
-        <ellipse cx="196" cy="110" rx="9" ry="12" fill="#e8b080"/>
-
-        <!-- 顔 -->
-        <ellipse cx="140" cy="106" rx="56" ry="62" fill="#f0c090"/>
-
-        <!-- 後ろ髪 -->
-        <ellipse cx="140" cy="70" rx="58" ry="42" fill="#3a2818"/>
-        <!-- サイド髪 -->
-        <path d="M85 90 Q75 120 82 148" stroke="#3a2818" stroke-width="12" fill="none" stroke-linecap="round"/>
-        <path d="M195 90 Q205 120 198 148" stroke="#3a2818" stroke-width="12" fill="none" stroke-linecap="round"/>
-
-        <!-- 軍帽 -->
-        <ellipse cx="140" cy="56" rx="62" ry="22" fill="#2d4a1e"/>
-        <ellipse cx="140" cy="52" rx="56" ry="16" fill="#3a6028"/>
-        <!-- 帽子のひさし -->
-        <path d="M88 66 Q140 78 192 66 L196 72 Q140 84 84 72 Z" fill="#243818"/>
-        <!-- 帽章 -->
-        <polygon points="140,34 145,46 140,43 135,46" fill="#c8a832"/>
-        <circle cx="140" cy="40" r="5" fill="#c8a832"/>
-        <!-- 帽子ライン -->
-        <line x1="88" y1="64" x2="192" y2="64" stroke="#c8a832" stroke-width="1.5"/>
-
-        <!-- 眉毛 -->
-        <path d="M112 84 Q122 79 132 82" stroke="#2a1a08" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M148 82 Q158 79 168 84" stroke="#2a1a08" stroke-width="4" fill="none" stroke-linecap="round"/>
-
-        <!-- 左目（向かって右） -->
-        <g transform="translate(122, 103)">
-          <ellipse cx="0" cy="0" rx="13" ry="12" fill="white"/>
-          <ellipse cx="0" cy="0" rx="9" ry="9" fill="#4a8060"/>
-          <ellipse cx="0" cy="0" rx="6" ry="6" fill="#1a1a1a"/>
-          <ellipse cx="-2" cy="-2" rx="2.5" ry="2.5" fill="white"/>
-          <ellipse cx="-3" cy="-3" rx="1" ry="1" fill="rgba(255,255,255,0.6)"/>
-          <!-- まぶた -->
-          <rect class="eyelid" x="-14" y="-13" width="28" height="25" fill="#f0c090" rx="2"/>
-        </g>
-
-        <!-- 右目（向かって左） -->
-        <g transform="translate(158, 103)">
-          <ellipse cx="0" cy="0" rx="13" ry="12" fill="white"/>
-          <ellipse cx="0" cy="0" rx="9" ry="9" fill="#4a8060"/>
-          <ellipse cx="0" cy="0" rx="6" ry="6" fill="#1a1a1a"/>
-          <ellipse cx="-2" cy="-2" rx="2.5" ry="2.5" fill="white"/>
-          <ellipse cx="-3" cy="-3" rx="1" ry="1" fill="rgba(255,255,255,0.6)"/>
-          <rect class="eyelid-r" x="-14" y="-13" width="28" height="25" fill="#f0c090" rx="2"/>
-        </g>
-
-        <!-- 鼻 -->
-        <path d="M136 118 Q140 124 144 118" stroke="#c49060" fill="none" stroke-width="1.5" stroke-linecap="round"/>
-
-        <!-- 口（閉じ） -->
-        <path class="mouth-closed" d="M128 136 Q140 143 152 136" stroke="#b07060" fill="none" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- 口（開き） -->
-        <ellipse class="mouth-open" cx="140" cy="139" rx="12" ry="7" fill="#7a2a1a"/>
-        <path class="mouth-open" d="M128 136 Q140 143 152 136" stroke="#b07060" fill="none" stroke-width="2" stroke-linecap="round"/>
-      </g>
-    </svg>
-
-    <!-- 吹き出し -->
-    <div id="speech-bubble"></div>
-
-    <!-- タップ誘導 -->
-    <div id="tap-hint">▼ タップして開始 ▼</div>
-  </div><!-- /character-area -->
-
-  <!-- 質問パネル（キャラクター上にオーバーレイ） -->
-  <div id="question-panel">
-    <div id="q-progress">Q<span id="q-num">1</span> / 5</div>
-    <div id="q-text"></div>
-    <div id="answers"></div>
-  </div>
-
-</div><!-- /app -->
-
-<!-- 診断中 -->
-<div id="calculating">
-  <div style="font-size:36px">⚙️</div>
-  <div>診断中<span class="dots">...</span></div>
+<div id="question-panel" hidden>
+  <div id="q-progress">Q<span id="q-num">1</span> / 5</div>
+  <div id="q-bar"><div id="q-bar-fill" style="width:0%"></div></div>
+  <div id="q-text"></div>
+  <div id="answers"></div>
 </div>
 
-<!-- 結果 -->
-<div id="result-panel">
+<div id="calculating" hidden>
+  <div style="font-size:44px">⚙️</div>
+  <div>診断中<span class="dot-anim"></span></div>
+</div>
+
+<div id="result-panel" hidden>
   <div id="result-icon"></div>
   <div id="result-class-en"></div>
   <div id="result-class-jp"></div>
@@ -458,287 +183,265 @@ body::before {
   <button id="retry-btn" onclick="restart()">もう一度診断する</button>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@7/dist/pixi.min.js"></script>
 <script>
-// ===================== データ定義 =====================
+// ===================== PixiJS =====================
+const pixiApp = new PIXI.Application({
+  view: document.getElementById('pixi-canvas'),
+  resizeTo: window,
+  backgroundAlpha: 0,
+  antialias: true,
+  resolution: Math.min(window.devicePixelRatio || 1, 2),
+  autoDensity: true,
+});
 
-const QUESTIONS = [
-  {
-    q: '戦場でのあなたのスタイルは？',
-    a: [
-      { text: '🔫 最前線で敵を直接撃破！',      s: { ranger:3 } },
-      { text: '⚡ 空から高速で急襲！',           s: { winger:3 } },
-      { text: '📡 援軍・爆撃で戦局を操る！',    s: { raider:3 } },
-      { text: '⚙️ 重装甲で仲間を守り抜く！',   s: { fencer:3 } },
-    ]
-  },
-  {
-    q: 'あなたの最大の強みは？',
-    a: [
-      { text: '💪 体力と精神力なら負けない！',  s: { ranger:2, fencer:1 } },
-      { text: '🚀 俊敏さと機動力が自慢！',      s: { winger:3 } },
-      { text: '🧠 分析力と戦略眼は超一流！',   s: { raider:3 } },
-      { text: '🛡️ どんな攻撃も耐え抜く精神！', s: { fencer:3 } },
-    ]
-  },
-  {
-    q: '好きな装備・兵器は？',
-    a: [
-      { text: '🎯 ライフルとロケットランチャー', s: { ranger:3 } },
-      { text: '⚡ プラズマ兵器とジェットパック', s: { winger:3 } },
-      { text: '💣 爆撃要請とビークル召喚',       s: { raider:3 } },
-      { text: '🔩 重装甲と大型ブースター',        s: { fencer:3 } },
-    ]
-  },
-  {
-    q: '仲間がピンチ！あなたはどうする？',
-    a: [
-      { text: '🏃 すぐに駆けつけて戦う！',        s: { ranger:3 } },
-      { text: '🛩️ 上空から援護射撃！',           s: { winger:2, raider:1 } },
-      { text: '📻 増援を呼んで包囲殲滅！',        s: { raider:3 } },
-      { text: '🛡️ 盾になって仲間を守る！',       s: { fencer:3 } },
-    ]
-  },
-  {
-    q: 'EDF入隊の動機は？',
-    a: [
-      { text: '🌍 地球を守りたい！',              s: { ranger:2, winger:1 } },
-      { text: '✈️ 空を自由に飛びたかった！',      s: { winger:3 } },
-      { text: '🎯 最高の作戦で勝利したい！',      s: { raider:3 } },
-      { text: '💥 最強の装備を纏いたい！',        s: { fencer:3 } },
-    ]
+let sprite = null, baseScale = 1, baseY = 0;
+let animT = 0, reactT = 0, glowT = 0;
+let talking = false, reacting = false, glowing = false;
+
+PIXI.Assets.load('/character.png').then(tex => {
+  sprite = new PIXI.Sprite(tex);
+  sprite.anchor.set(0.5, 1.0);
+
+  const fit = () => {
+    const scale = (window.innerHeight * 0.84) / tex.height;
+    baseScale = scale;
+    sprite.x = pixiApp.screen.width / 2;
+    sprite.y = pixiApp.screen.height * 0.97;
+    baseY = sprite.y;
+  };
+  fit();
+  window.addEventListener('resize', fit);
+
+  pixiApp.stage.addChild(sprite);
+  pixiApp.ticker.add(tick);
+});
+
+function tick(delta) {
+  if (!sprite) return;
+  animT += delta * 0.016;
+
+  // 有機的なアイドルアニメーション（3つの周波数を重ねる）
+  const breathe = Math.sin(animT * 1.25) * 0.011;
+  const sway    = Math.sin(animT * 0.73) * 0.013;
+  const float_  = Math.sin(animT * 1.05) * 3.2;
+  const micro   = Math.sin(animT * 2.40) * 0.003;
+
+  let sx = baseScale * (1 - breathe * 0.25 + micro);
+  let sy = baseScale * (1 + breathe - micro);
+  let rot = sway;
+  let py = baseY + float_;
+
+  // 口パク（上体が微細に波打つ）
+  if (talking) {
+    const t = Math.sin(animT * 15) * 0.009;
+    sx += t; sy -= t * 1.5;
   }
+
+  // タップリアクション（バウンス減衰）
+  if (reacting) {
+    reactT += delta * 0.016;
+    const b = Math.sin(reactT * 22) * Math.exp(-reactT * 4.5) * 20;
+    py = baseY + float_ + b;
+    const sq = Math.abs(b) * 0.0012;
+    sx += sq; sy -= sq * 2;
+    if (reactT > 1.3) { reacting = false; reactT = 0; }
+  }
+
+  // 結果グロー（色温度を揺らす）
+  if (glowing) {
+    glowT += delta * 0.016;
+    const g = Math.sin(glowT * 2.8) * 0.5 + 0.5;
+    const r = 1, gr = 1 - g * 0.25, b = 1 - g * 0.15;
+    sprite.tint = PIXI.utils.rgb2hex([r, gr, b]);
+  }
+
+  sprite.scale.x = sx;
+  sprite.scale.y = sy;
+  sprite.rotation = rot;
+  sprite.y = py;
+}
+
+const charAnim = {
+  startTalk() { talking = true; },
+  stopTalk()  { talking = false; },
+  react()     { reacting = true; reactT = 0; },
+  glow(on)    { glowing = on; glowT = 0; if (!on && sprite) sprite.tint = 0xffffff; },
+};
+
+// ===================== データ =====================
+const QUESTIONS = [
+  { q: '戦場でのあなたのスタイルは？', a: [
+    { text: '🔫 最前線で敵を直接撃破！',     s: {ranger:3} },
+    { text: '⚡ 空から高速で急襲！',          s: {winger:3} },
+    { text: '📡 援軍・爆撃で戦局を操る！',   s: {raider:3} },
+    { text: '⚙️ 重装甲で仲間を守り抜く！',  s: {fencer:3} },
+  ]},
+  { q: 'あなたの最大の強みは？', a: [
+    { text: '💪 体力と精神力なら負けない！', s: {ranger:2, fencer:1} },
+    { text: '🚀 俊敏さと機動力が自慢！',     s: {winger:3} },
+    { text: '🧠 分析力と戦略眼は超一流！',  s: {raider:3} },
+    { text: '🛡️ どんな攻撃も耐え抜く精神！',s: {fencer:3} },
+  ]},
+  { q: '好きな装備・兵器は？', a: [
+    { text: '🎯 ライフルとロケットランチャー', s: {ranger:3} },
+    { text: '⚡ プラズマ兵器とジェットパック', s: {winger:3} },
+    { text: '💣 爆撃要請とビークル召喚',      s: {raider:3} },
+    { text: '🔩 重装甲と大型ブースター',       s: {fencer:3} },
+  ]},
+  { q: '仲間がピンチ！あなたはどうする？', a: [
+    { text: '🏃 すぐに駆けつけて戦う！',      s: {ranger:3} },
+    { text: '🛩️ 上空から援護射撃！',          s: {winger:2, raider:1} },
+    { text: '📻 増援を呼んで包囲殲滅！',      s: {raider:3} },
+    { text: '🛡️ 盾になって仲間を守る！',      s: {fencer:3} },
+  ]},
+  { q: 'EDF入隊の動機は？', a: [
+    { text: '🌍 地球を守りたい！',             s: {ranger:2, winger:1} },
+    { text: '✈️ 空を自由に飛びたかった！',     s: {winger:3} },
+    { text: '🎯 最高の作戦で勝利したい！',     s: {raider:3} },
+    { text: '💥 最強の装備を纏いたい！',       s: {fencer:3} },
+  ]},
 ];
 
 const REACTIONS = [
-  ['突撃型か！頼もしい！', '空中戦を好むか！', '支援型だな！', '重装型の素質あり！'],
-  ['鋼鉄の意志だ！',        '機動力重視か！',   '戦略家の素質あり！', '頑強な精神だ！'],
-  ['典型的なレンジャー装備！', 'プラズマ使いか！', '制空権を握る男だ！', '重機への情熱だ！'],
-  ['仲間思いだ！',            '制空支援か！',     '完璧な包囲作戦だ！', '最高の盾になれる！'],
-  ['崇高な志だ！',             '飛行の才能あり！', '戦略家の資質あり！', '装備への憧れか！'],
+  ['突撃型か！頼もしい！','空中戦を好むか！','支援型だな！','重装型の素質あり！'],
+  ['鋼鉄の意志だ！','機動力重視か！','戦略家の素質あり！','頑強な精神だ！'],
+  ['典型的なレンジャー装備！','プラズマ使いか！','制空権を握る男だ！','重機への情熱だ！'],
+  ['仲間思いだ！','制空支援か！','完璧な包囲作戦だ！','最高の盾になれる！'],
+  ['崇高な志だ！','飛行の才能あり！','戦略家の資質あり！','装備への憧れか！'],
 ];
 
-const INTRO_LINES = [
+const INTRO = [
   'よく来た新兵。\nこれよりEDF適正診断を行う。',
   '正直に答えれば、\nお前に最適な兵科が判明する。',
-  '覚悟はいいか？\nでは始めよう！EDF！',
+  '覚悟はいいか？\nでは始めよう！　EDF！',
 ];
 
 const RESULTS = {
-  ranger: {
-    title: 'レンジャー',   en: 'RANGER',
-    color: '#5aaa5a',  bg: 'linear-gradient(160deg,#0a1808,#1a3010)',
-    icon: '🪖',
-    desc: '最も多くのEDF隊員を輩出する基本兵科。\n優れたバランス感覚と強靭な精神力を持つ。\n地球防衛の最前線を支える真のエリートだ。',
-    speech: '貴官はレンジャー適正認定！地球の盾となれ！EDF！EDF！EDF！',
-  },
-  winger: {
-    title: 'ウイングダイバー', en: 'WING DIVER',
-    color: '#6a8aee',  bg: 'linear-gradient(160deg,#080a18,#101830)',
-    icon: '⚡',
-    desc: '空中を高速で飛び回る精鋭飛行部隊。\nプラズマ兵器を駆使し敵の弱点を突く。\n機動力と火力を兼ね備えた空の戦士だ。',
-    speech: '貴官はウイングダイバー適正認定！大空を駆け、敵を蹴散らせ！EDF！EDF！',
-  },
-  raider: {
-    title: 'エアレイダー', en: 'AIR RAIDER',
-    color: '#e0aa40',  bg: 'linear-gradient(160deg,#120e04,#281c08)',
-    icon: '📡',
-    desc: '爆撃要請やビークル召喚を駆使する戦略家。\n戦場を俯瞰し最適な支援を行う頭脳派。\n「見えない力」で戦局を動かす影の司令官だ。',
-    speech: '貴官はエアレイダー適正認定！最強の作戦で地球を救え！EDF！EDF！',
-  },
-  fencer: {
-    title: 'フェンサー', en: 'FENCER',
-    color: '#aa70ee',  bg: 'linear-gradient(160deg,#0e0818,#1c1030)',
-    icon: '⚙️',
-    desc: 'パワードスーツで超重装備を纏う最強の盾。\nどんな攻撃も受け止める鋼鉄の意志。\n圧倒的な防御力で仲間を守り抜く要塞兵だ。',
-    speech: '貴官はフェンサー適正認定！重装甲で全てを薙ぎ払え！EDF！EDF！',
-  },
+  ranger: { title:'レンジャー', en:'RANGER', color:'#5aaa5a',
+    bg:'linear-gradient(160deg,#050e05,#0d2008)',  icon:'🪖',
+    desc:'最も多くのEDF隊員を輩出する基本兵科。\n優れたバランス感覚と強靭な精神力を持つ。\n地球防衛の最前線を支える真のエリートだ。',
+    speech:'貴官はレンジャー適正認定！地球の盾となれ！EDF！EDF！EDF！' },
+  winger: { title:'ウイングダイバー', en:'WING DIVER', color:'#6a8aee',
+    bg:'linear-gradient(160deg,#05050e,#0a0d28)', icon:'⚡',
+    desc:'空中を高速で飛び回る精鋭飛行部隊。\nプラズマ兵器を駆使し敵の弱点を突く。\n機動力と火力を兼ね備えた空の戦士だ。',
+    speech:'貴官はウイングダイバー適正認定！大空を駆け、敵を蹴散らせ！EDF！EDF！' },
+  raider: { title:'エアレイダー', en:'AIR RAIDER', color:'#e0aa40',
+    bg:'linear-gradient(160deg,#0e0a02,#201408)', icon:'📡',
+    desc:'爆撃要請やビークル召喚を駆使する戦略家。\n戦場を俯瞰し最適な支援を行う頭脳派。\n「見えない力」で戦局を動かす影の司令官だ。',
+    speech:'貴官はエアレイダー適正認定！最強の作戦で地球を救え！EDF！EDF！' },
+  fencer: { title:'フェンサー', en:'FENCER', color:'#aa70ee',
+    bg:'linear-gradient(160deg,#080410,#14082a)', icon:'⚙️',
+    desc:'パワードスーツで超重装備を纏う最強の盾。\nどんな攻撃も受け止める鋼鉄の意志。\n圧倒的な防御力で仲間を守り抜く要塞兵だ。',
+    speech:'貴官はフェンサー適正認定！重装甲で全てを薙ぎ払え！EDF！EDF！' },
 };
 
-// ===================== ゲーム状態 =====================
-let state = 'idle'; // idle | intro | question | reaction | calculating | result
-let introIdx = 0;
-let qIdx = 0;
-let scores = { ranger: 0, winger: 0, raider: 0, fencer: 0 };
-let isTalking = false;
-let talkTimer = null;
+// ===================== ゲーム =====================
+let state = 'idle', introIdx = 0, qIdx = 0;
+let scores = {ranger:0, winger:0, raider:0, fencer:0};
+const $ = id => document.getElementById(id);
 
-// ===================== 要素取得 =====================
-const charSvg      = document.getElementById('character-svg');
-const speechBubble = document.getElementById('speech-bubble');
-const tapHint      = document.getElementById('tap-hint');
-const qPanel       = document.getElementById('question-panel');
-const qNum         = document.getElementById('q-num');
-const qText        = document.getElementById('q-text');
-const answersDiv   = document.getElementById('answers');
-const calcDiv      = document.getElementById('calculating');
-const resultPanel  = document.getElementById('result-panel');
-
-// ===================== 音声 =====================
-function speak(text, onEnd) {
-  const synth = window.speechSynthesis;
-  if (!synth) { onEnd?.(); return; }
-  synth.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = 'ja-JP';
-  utter.rate = 0.95;
-  utter.pitch = 0.9;
-  utter.onend = () => { stopTalking(); onEnd?.(); };
-  utter.onerror = () => { stopTalking(); onEnd?.(); };
-  startTalking();
-  synth.speak(utter);
+function speak(text, cb) {
+  const s = window.speechSynthesis;
+  if (!s) { cb?.(); return; }
+  s.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ja-JP'; u.rate = 0.95; u.pitch = 0.85;
+  u.onstart = () => charAnim.startTalk();
+  u.onend   = () => { charAnim.stopTalk(); cb?.(); };
+  u.onerror = () => { charAnim.stopTalk(); cb?.(); };
+  s.speak(u);
 }
 
-function startTalking() {
-  isTalking = true;
-  charSvg.classList.add('talking');
-  clearInterval(talkTimer);
-  talkTimer = setInterval(() => {
-    const open = charSvg.classList.contains('talking');
-    charSvg.classList.toggle('mouth-toggle', open);
-  }, 160);
-}
+function showBubble(t) { $('speech-bubble').textContent = t; $('speech-bubble').classList.add('show'); }
+function hideBubble()  { $('speech-bubble').classList.remove('show'); }
 
-function stopTalking() {
-  isTalking = false;
-  charSvg.classList.remove('talking');
-  clearInterval(talkTimer);
-}
-
-// ===================== 吹き出し =====================
-function showBubble(text) {
-  speechBubble.textContent = text;
-  speechBubble.classList.add('show');
-}
-
-function hideBubble() {
-  speechBubble.classList.remove('show');
-}
-
-// ===================== キャラタップ処理 =====================
 function onCharacterTap() {
   if (state === 'idle') {
-    startIntro();
+    state = 'intro'; introIdx = 0;
+    $('tap-hint').style.display = 'none';
+    showIntroLine();
   } else if (state === 'intro') {
     window.speechSynthesis?.cancel();
-    stopTalking();
+    charAnim.stopTalk();
     introIdx++;
-    if (introIdx >= INTRO_LINES.length) {
-      startQuestions();
-    } else {
-      showIntroLine();
-    }
+    introIdx >= INTRO.length ? startQuestions() : showIntroLine();
   }
-  // question/reaction/result 中はボタンで操作
-}
-
-// ===================== イントロ =====================
-function startIntro() {
-  state = 'intro';
-  introIdx = 0;
-  tapHint.style.display = 'none';
-  showIntroLine();
+  charAnim.react();
 }
 
 function showIntroLine() {
-  const line = INTRO_LINES[introIdx];
-  showBubble(line + '\n\n（タップで次へ）');
-  speak(line, () => {});
+  showBubble(INTRO[introIdx] + '\n\n（タップで次へ）');
+  speak(INTRO[introIdx], () => {});
 }
 
-// ===================== 質問 =====================
 function startQuestions() {
-  state = 'question';
-  hideBubble();
-  qIdx = 0;
-  scores = { ranger: 0, winger: 0, raider: 0, fencer: 0 };
+  state = 'question'; hideBubble();
+  qIdx = 0; scores = {ranger:0, winger:0, raider:0, fencer:0};
   showQuestion();
 }
 
 function showQuestion() {
   const q = QUESTIONS[qIdx];
-  qNum.textContent = qIdx + 1;
-  qText.textContent = q.q;
-  answersDiv.innerHTML = '';
-  q.a.forEach((ans, i) => {
+  $('q-num').textContent = qIdx + 1;
+  $('q-bar-fill').style.width = (qIdx / QUESTIONS.length * 100) + '%';
+  $('q-text').textContent = q.q;
+  $('answers').innerHTML = '';
+  q.a.forEach((a, i) => {
     const btn = document.createElement('button');
-    btn.className = 'answer-btn';
-    btn.textContent = ans.text;
+    btn.className = 'answer-btn'; btn.textContent = a.text;
     btn.onclick = () => selectAnswer(i);
-    answersDiv.appendChild(btn);
+    $('answers').appendChild(btn);
   });
-  qPanel.classList.add('show');
-
-  // キャラが質問を読み上げ
+  $('question-panel').removeAttribute('hidden');
   speak(q.q, () => {});
 }
 
 function selectAnswer(i) {
   if (state !== 'question') return;
   state = 'reaction';
-
-  // ボタン無効化
   document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-
-  // スコア加算
-  const s = QUESTIONS[qIdx].a[i].s;
-  Object.entries(s).forEach(([k, v]) => { scores[k] += v; });
-
-  // キャラ反応
-  const reaction = REACTIONS[qIdx][i];
-  qPanel.classList.remove('show');
-  showBubble(reaction);
-  speak(reaction, () => {
+  Object.entries(QUESTIONS[qIdx].a[i].s).forEach(([k,v]) => scores[k] += v);
+  const react = REACTIONS[qIdx][i];
+  $('question-panel').setAttribute('hidden', '');
+  showBubble(react);
+  charAnim.react();
+  speak(react, () => {
     hideBubble();
     qIdx++;
-    if (qIdx >= QUESTIONS.length) {
-      showCalculating();
-    } else {
-      state = 'question';
-      showQuestion();
-    }
+    qIdx >= QUESTIONS.length ? showCalculating() : (state = 'question', showQuestion());
   });
-
-  // タッチバウンス
-  charSvg.classList.add('touched');
-  setTimeout(() => charSvg.classList.remove('touched'), 500);
 }
 
-// ===================== 診断中 =====================
 function showCalculating() {
   state = 'calculating';
-  calcDiv.classList.add('show');
-  speak('診断中だ...', () => {});
-  setTimeout(showResult, 2200);
+  $('calculating').removeAttribute('hidden');
+  speak('診断中だ…', () => {});
+  setTimeout(showResult, 2500);
 }
 
-// ===================== 結果 =====================
 function showResult() {
-  calcDiv.classList.remove('show');
+  $('calculating').setAttribute('hidden', '');
   const best = Object.entries(scores).sort((a,b) => b[1]-a[1])[0][0];
   const r = RESULTS[best];
-
-  resultPanel.style.background = r.bg;
-  document.getElementById('result-icon').textContent     = r.icon;
-  document.getElementById('result-class-en').textContent = r.en;
-  document.getElementById('result-class-jp').textContent = r.title;
-  document.getElementById('result-class-jp').style.color = r.color;
-  document.getElementById('result-desc').textContent     = r.desc;
-
-  resultPanel.classList.add('show');
+  $('result-panel').style.background = r.bg;
+  $('result-icon').textContent = r.icon;
+  $('result-class-en').textContent = r.en;
+  $('result-class-jp').textContent = r.title;
+  $('result-class-jp').style.color = r.color;
+  $('result-desc').textContent = r.desc;
+  $('result-panel').removeAttribute('hidden');
   state = 'result';
-  setTimeout(() => speak(r.speech, () => {}), 800);
+  charAnim.glow(true);
+  setTimeout(() => speak(r.speech, () => charAnim.glow(false)), 700);
 }
 
-// ===================== リトライ =====================
 function restart() {
   window.speechSynthesis?.cancel();
-  stopTalking();
-  resultPanel.classList.remove('show');
-  hideBubble();
-  tapHint.style.display = '';
-  introIdx = 0;
-  qIdx = 0;
-  state = 'idle';
+  charAnim.stopTalk(); charAnim.glow(false);
+  $('result-panel').setAttribute('hidden', '');
+  hideBubble(); $('tap-hint').style.display = '';
+  introIdx = 0; qIdx = 0; state = 'idle';
 }
 </script>
 </body>
