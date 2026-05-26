@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: edf-diagnosis
+    env: node
+    region: singapore
+    buildCommand: npm install
+    startCommand: npm start
