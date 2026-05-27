@@ -289,7 +289,7 @@ const REACTIONS = [
 
 const RESULTS = {
   ranger: { title:'レンジャー', en:'RANGER', color:'#5aaa5a',
-    bg:'linear-gradient(160deg,#050e05,#0d2008)', icon:'🪖',
+    bg:'linear-gradient(160deg,#050e05,#0d2008)', icon:'🪖', iconImg:'/sol_icon.png',
     desc:'最も多くのEDF隊員を輩出する基本兵科。\n優れたバランス感覚と強靭な精神力を持つ。\n地球防衛の最前線を支える真のエリートだ。',
     speech:'貴官はレンジャー適正認定！地球の盾となれ！EDF！EDF！EDF！' },
   winger: { title:'ウイングダイバー', en:'WING DIVER', color:'#6a8aee',
@@ -403,7 +403,11 @@ function showResult() {
   const best = Object.entries(scores).sort((a,b) => b[1]-a[1])[0][0];
   const r = RESULTS[best];
   $('result-panel').style.background = r.bg;
-  $('result-icon').textContent = r.icon;
+  if (r.iconImg) {
+    $('result-icon').innerHTML = `<img src="${r.iconImg}" style="width:70px;height:70px;object-fit:contain;">`;
+  } else {
+    $('result-icon').textContent = r.icon;
+  }
   $('result-class-en').textContent = r.en;
   $('result-class-jp').textContent = r.title;
   $('result-class-jp').style.color = r.color;
