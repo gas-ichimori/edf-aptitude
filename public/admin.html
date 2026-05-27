@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EDF診断 管理画面</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #07100a;
+  color: #dff0d0;
+  font-family: 'M PLUS 1p', 'Hiragino Sans', sans-serif;
+  font-weight: 800;
+  min-height: 100vh;
+  padding: 28px 20px;
+}
+h1 {
+  font-size: 14px; letter-spacing: 4px; color: #c8a832;
+  margin-bottom: 28px; text-align: center;
+  border-bottom: 1px solid rgba(200,168,50,0.2);
+  padding-bottom: 16px;
+}
+h2 { font-size: 11px; letter-spacing: 3px; color: #c8a832; margin-bottom: 12px; }
+.section { margin-bottom: 28px; }
+.options { display: flex; gap: 10px; flex-wrap: wrap; }
+.opt-btn {
+  flex: 1; min-width: 130px;
+  padding: 16px 12px;
+  background: rgba(18,45,12,0.6);
+  border: 1.5px solid rgba(100,180,60,0.25);
+  border-radius: 10px;
+  color: #dff0d0; font-size: 14px; font-family: inherit;
+  cursor: pointer; text-align: center;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.opt-btn:hover  { border-color: #c8a832; background: rgba(50,110,28,0.55); }
+.opt-btn.active { border-color: #c8a832; background: rgba(50,110,28,0.9); color: #fff; }
+.status-box {
+  background: rgba(18,45,12,0.5);
+  border: 1px solid rgba(100,180,60,0.2);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 28px;
+  font-size: 13px; line-height: 2.2;
+}
+.status-box span { color: #c8a832; }
+.main-link {
+  display: block; text-align: center;
+  padding: 14px; margin-top: 8px;
+  border: 2px solid rgba(200,168,50,0.5); border-radius: 40px;
+  color: #c8a832; text-decoration: none; font-size: 13px; letter-spacing: 2px;
+}
+.main-link:hover { background: rgba(200,168,50,0.12); }
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: rgba(30,80,18,0.97); border: 1px solid #c8a832; border-radius: 8px;
+  padding: 10px 22px; font-size: 12px; white-space: nowrap;
+  opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 99;
+}
+.toast.show { opacity: 1; }
+.divider { border: none; border-top: 1px solid rgba(100,180,60,0.15); margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<h1>— EDF診断 管理画面 —</h1>
+
+<div class="status-box" id="status-box">読み込み中…</div>
+
+<div class="section">
+  <h2>▌ キャラクター</h2>
+  <div class="options">
+    <button class="opt-btn" id="btn-soldier"   onclick="setSetting('character','soldier')">🪖 ソルジャー<br><small style="font-size:10px;opacity:0.7">女性ボイス</small></button>
+    <button class="opt-btn" id="btn-professor" onclick="setSetting('character','professor')">🔬 プロフェッサー<br><small style="font-size:10px;opacity:0.7">男性ボイス</small></button>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="section">
+  <h2>▌ 背景</h2>
+  <div class="options">
+    <button class="opt-btn" id="btn-bg1" onclick="setSetting('background','bg1')">🌆 バトルフィールド</button>
+    <button class="opt-btn" id="btn-bg2" onclick="setSetting('background','bg2')">🐜 アントインベージョン</button>
+  </div>
+</div>
+
+<hr class="divider">
+
+<a href="/" target="_blank" class="main-link">メインページを開く ↗</a>
+
+<div class="toast" id="toast"></div>
+
+<script>
+async function loadState() {
+  const s = await fetch('/api/state').then(r => r.json());
+  updateUI(s);
+}
+
+function updateUI(s) {
+  const charLabel = { soldier: 'ソルジャー（女性ボイス）', professor: 'プロフェッサー（男性ボイス）' };
+  const bgLabel   = { bg1: 'バトルフィールド', bg2: 'アントインベージョン' };
+  document.getElementById('status-box').innerHTML =
+    `キャラクター：<span>${charLabel[s.character] || s.character}</span><br>` +
+    `背景：<span>${bgLabel[s.background] || s.background}</span>`;
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + s.character)?.classList.add('active');
+  document.getElementById('btn-' + s.background)?.classList.add('active');
+}
+
+async function setSetting(key, val) {
+  const body = {};
+  body[key] = val;
+  const s = await fetch('/api/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).then(r => r.json());
+  updateUI(s);
+  toast('変更しました。メインページが自動でリロードされます。');
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+loadState();
+</script>
+</body>
+</html>
